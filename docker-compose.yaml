@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  taskdb:
+    image: postgres
+    networks:
+      - user-network
+    container_name: db-cars
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: cars
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  user-network:
+    driver: bridge
