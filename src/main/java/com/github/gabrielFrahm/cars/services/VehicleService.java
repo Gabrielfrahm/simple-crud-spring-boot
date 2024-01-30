@@ -1,10 +1,13 @@
 package com.github.gabrielFrahm.cars.services;
 
 import com.github.gabrielFrahm.cars.dtos.CreateVehicleData;
+import com.github.gabrielFrahm.cars.dtos.UpdateVehicleData;
 import com.github.gabrielFrahm.cars.models.Vehicle;
+import com.github.gabrielFrahm.cars.pagination.Page;
 import com.github.gabrielFrahm.cars.repositories.ModelRepository;
 import com.github.gabrielFrahm.cars.repositories.VehicleRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,8 +20,9 @@ public class VehicleService {
   private final VehicleRepository vehicleRepository;
   private final ModelRepository modelRepository;
 
-  public List<Vehicle> list() {
-     return vehicleRepository.findAll();
+  public Page<Vehicle> find(Pageable pageable) {
+     var page = vehicleRepository.findAll(pageable);
+     return  new Page<>(page);
   }
 
   public Vehicle getById(Long id) {
@@ -26,12 +30,11 @@ public class VehicleService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"vehicle not found"));
   }
   public Vehicle create(CreateVehicleData data){
-
     var model =  modelRepository.findById(data.getModelId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"model not found"));
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "model not found"));
 
     var newVehicle = new Vehicle(
-      data.getKilometers(),
+        data.getKilometers(),
         data.getColor(),
         data.getDescription(),
         data.getYear(),
@@ -42,11 +45,29 @@ public class VehicleService {
     return  newVehicle;
   }
 
-  public Vehicle updateById(Vehicle vehicle, Long id) {
-    return null;
+  public Vehicle updateById(UpdateVehicleData data, Long id) {
+
+
+    var vehicle =  vehicleRepository.findById(data.getModelId())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "vehicle not found"));
+
+    var model =  modelRepository.findById(data.getModelId())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "model not found"));
+
+    vehicle.setKilometers(data.getKilometers());
+    vehicle.setColor(data.getColor());
+    vehicle.setDescription(data.getDescription());
+    vehicle.setYear(data.getYear());
+    vehicle.setModel(model);
+
+    vehicleRepository.save(vehicle);
+    return  vehicle;
   }
 
   public void deleteById(Long id) {
-
+    if(!vehicleRepository.existsById(id)){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "vehicle not found");
+    }
+    vehicleRepository.deleteById(id);
   }
 }

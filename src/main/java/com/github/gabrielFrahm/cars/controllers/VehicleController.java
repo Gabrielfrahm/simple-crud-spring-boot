@@ -2,15 +2,18 @@ package com.github.gabrielFrahm.cars.controllers;
 
 
 import com.github.gabrielFrahm.cars.dtos.CreateVehicleData;
+import com.github.gabrielFrahm.cars.dtos.UpdateVehicleData;
 import com.github.gabrielFrahm.cars.dtos.VehicleData;
 import com.github.gabrielFrahm.cars.models.*;
 
-import com.github.gabrielFrahm.cars.repositories.VehicleRepository;
+import com.github.gabrielFrahm.cars.pagination.Page;
 import com.github.gabrielFrahm.cars.services.VehicleService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -22,9 +25,9 @@ public class VehicleController {
     private final VehicleService  vehicleService;
 
     @GetMapping
-    public List<VehicleData> index(){
-        var vehicles = vehicleService.list();
-        return vehicles.stream().map(vehicle -> new VehicleData(vehicle)).toList();
+    public Page<VehicleData> index(Pageable pageable){
+        var page = vehicleService.find(pageable);
+        return page.map(VehicleData::new);
     }
 
     @GetMapping("/{id}")
@@ -40,7 +43,7 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    public VehicleData update(@PathVariable("id") Long id, Vehicle vehicle){
+    public VehicleData update(@PathVariable("id") Long id, @RequestBody @Validated UpdateVehicleData vehicle){
         var vehicleUpdated = vehicleService.updateById(vehicle, id);
         return new VehicleData(vehicleUpdated);
     }
