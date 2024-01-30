@@ -44,7 +44,9 @@ public class Vehicle {
     this.kilometers = kilometers;
     this.color = color;
     this.description = description;
+    this.available = true;
     this.year = year;
     this.model = model;
+    this.optionals = List.of();
   }
 }
